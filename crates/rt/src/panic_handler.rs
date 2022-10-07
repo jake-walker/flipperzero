@@ -7,12 +7,11 @@ use core::panic::PanicInfo;
 use core::str;
 
 use flipperzero_sys::{c_string, furi};
-
-use crate::furi::io::Stdout;
+use heapless::String;
 
 #[panic_handler]
 pub fn panic(panic_info: &PanicInfo<'_>) -> ! {
-    let mut stdout = Stdout;
+    let mut msg: String<1024> = String::new();
 
     let thread_name = unsafe {
         let thread_id = furi::thread::get_current_id();
@@ -27,12 +26,12 @@ pub fn panic(panic_info: &PanicInfo<'_>) -> ! {
 
     // Format: "thread: 'App Name' paniced at 'panic!', panic.rs:5"
     let _ = write!(
-        &mut stdout,
+        &mut msg,
         "\x1b[0;31mthread '{thread_name}' {panic_info}\x1b[0m\r\n"
     );
-    let _ = stdout.flush();
 
     unsafe {
+        furi::thread::stdout_write(msg.as_ptr(), msg.len());
         furi::thread::yield_(); // Allow console to flush
         furi::check::crash(c_string!("Rust panic\r\n"))
     }

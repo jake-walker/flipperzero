@@ -2,6 +2,7 @@
 members = [
     "crates/alloc",
     "crates/flipperzero",
+    "crates/rt",
     "crates/sys",
 ]
 
